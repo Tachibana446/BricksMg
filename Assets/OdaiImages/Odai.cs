@@ -44,6 +44,9 @@ public class Odai : MonoBehaviour
             case Name.FlamIgnis:
                 CheckFlamIgnis();
                 break;
+            case Name.FullsRequid:
+                CheckFullsRequid();
+                break;
             default:
                 break;
         }
@@ -112,8 +115,64 @@ public class Odai : MonoBehaviour
             clearCount = 0;
     }
 
+    /// <summary>
+    /// 東京タワーみたいなやつ
+    /// </summary>
+    private void CheckFullsRequid()
+    {
+        bool clear = false;
+        var cubes = new List<GameObject>(GameObject.FindGameObjectsWithTag("Cube")).Select(c => c.GetComponent<Cube>()).ToList();
+        foreach (var purple in cubes.Where(c => c.color == Cube.Color.Purple))
+        {
+            if (!cubes.Any(
+                // 右に他の紫キューブがあって
+                c => c.color == Cube.Color.Purple &&
+                c.GetInstanceID() != purple.GetInstanceID() &&
+                c.transform.position.x > purple.transform.position.x + 0.9 &&
+                cubes.Any(
+                    // さらに右に緑キューブと
+                    c2 => c2.color == Cube.Color.Green &&
+                    c2.transform.position.x > c.transform.position.x + 0.9 &&
+                    cubes.Any(
+                        // そのまた右に緑キューブがあるとき
+                        c3 => c3.color == Cube.Color.Green &&
+                        c2.GetInstanceID() != c3.GetInstanceID() &&
+                        c3.transform.position.x > c2.transform.position.x + 0.9
+                        ))))
+                continue;
+
+            Debug.Log("紫キューブがあるよ");
+
+            // 紫キューブより上のキューブたちの中で
+            var uppers = cubes.Where(c => c.transform.position.y > purple.transform.position.y + 0.9);
+            // 右に紫キューブがある緑キューブがあるか
+            if (!uppers.Any(
+                gr => gr.color == Cube.Color.Green &&
+                uppers.Any(pr => pr.transform.position.x > gr.transform.position.x + 1.2)))
+                continue;
+
+            Debug.Log("緑キューブもあるよ");
+
+            // 青が4つ三角状に並んでいたらクリア
+            if (uppers.Any(
+                bl => bl.color == Cube.Color.Blue &&
+                uppers.Any(bl2 => bl.GetInstanceID() != bl2.GetInstanceID() && bl2.transform.position.x > bl.transform.position.x + 0.9) &&
+                uppers.Count(
+                    c => c.color == Cube.Color.Blue &&
+                    c.GetInstanceID() != bl.GetInstanceID() &&
+                    c.transform.position.y > bl.transform.position.y + 0.9) >= 2))
+            {
+                clear = true;
+            }
+            if (clear)
+                clearCount++;
+            else
+                clearCount = 0;
+        }
+    }
+
     public enum Name
     {
-        FireDagger, FlamIgnis
+        FireDagger, FlamIgnis, FullsRequid,
     }
 }

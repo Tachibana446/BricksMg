@@ -32,4 +32,15 @@ public class CreateOdai : MonoBehaviour
             nowOdai = obj.GetComponent<Odai>();
         }
     }
+
+    /// <summary>
+    /// お題を引き直す
+    /// </summary>
+    public void ReloadOdai()
+    {
+        Destroy(nowOdai.gameObject);
+        var prefab = OdaiList[Random.Range(0, OdaiList.Count)];
+        var obj = Instantiate(prefab.gameObject, this.transform);
+        nowOdai = obj.GetComponent<Odai>();
+    }
 }
